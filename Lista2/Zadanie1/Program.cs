@@ -20,17 +20,15 @@ namespace Zadanie1 {
 
     static class PicrossSolver {
         private static Random RNG = new Random ();
-        private const double FailProb = 0.01;
+        private const double FailProb = 0.2;
+        private const int ResetCounter = 50000;
 
         private static Dictionary<List<int>, List<int>> CombinationCache = new Dictionary<List<int>, List<int>>();
         static int OptDist (int current, List<int> sectors, int patternLength) {
-            int SparseBitcount (int n) {
-                int count = 0;
-                while (n != 0) {
-                    count++;
-                    n &= (n - 1);
-                }
-                return count;
+            int SparseBitcount (int i) {
+                i = i - ((i >> 1) & 0x55555555);
+                i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
+                return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
             }
 
             if (!sectors.Any ()) return SparseBitcount (current);
@@ -121,7 +119,7 @@ namespace Zadanie1 {
             InitDists();
             while (columnScores.Any(x => x != 0) || rowScores.Any(x => x != 0)) {
                 turnCounter++;
-                if (turnCounter % 100000 == 0) {
+                if (turnCounter % ResetCounter == 0) {
                     picture = new int[columns.Length, rows.Length];
                     InitDists();
                 }
@@ -158,7 +156,7 @@ namespace Zadanie1 {
                     rowScores[bestY] = bestRow; 
                 }
             }
-            //Console.Error.WriteLine($"No of iterations: {turnCounter}");
+            Console.Error.WriteLine($"No of iterations: {turnCounter}");
             //Console.Error.WriteLine($"Time: {st.Elapsed}");
             DrawPicture ();
         }
