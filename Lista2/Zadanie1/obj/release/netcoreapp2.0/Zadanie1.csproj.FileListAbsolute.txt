@@ -1,0 +1,10 @@
+/Users/wiktor/Documents/Ai/Lista2/Zadanie1/bin/release/netcoreapp2.0/Zadanie1.deps.json
+/Users/wiktor/Documents/Ai/Lista2/Zadanie1/bin/release/netcoreapp2.0/Zadanie1.runtimeconfig.json
+/Users/wiktor/Documents/Ai/Lista2/Zadanie1/bin/release/netcoreapp2.0/Zadanie1.runtimeconfig.dev.json
+/Users/wiktor/Documents/Ai/Lista2/Zadanie1/bin/release/netcoreapp2.0/Zadanie1.dll
+/Users/wiktor/Documents/Ai/Lista2/Zadanie1/bin/release/netcoreapp2.0/Zadanie1.pdb
+/Users/wiktor/Documents/Ai/Lista2/Zadanie1/obj/release/netcoreapp2.0/Zadanie1.csproj.CoreCompileInputs.cache
+/Users/wiktor/Documents/Ai/Lista2/Zadanie1/obj/release/netcoreapp2.0/Zadanie1.AssemblyInfoInputs.cache
+/Users/wiktor/Documents/Ai/Lista2/Zadanie1/obj/release/netcoreapp2.0/Zadanie1.AssemblyInfo.cs
+/Users/wiktor/Documents/Ai/Lista2/Zadanie1/obj/release/netcoreapp2.0/Zadanie1.dll
+/Users/wiktor/Documents/Ai/Lista2/Zadanie1/obj/release/netcoreapp2.0/Zadanie1.pdb
