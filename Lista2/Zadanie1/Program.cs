@@ -62,17 +62,6 @@ namespace Zadanie1 {
                 }
             }
         }
-        // static int OptDist (List<int> pattern, int length) {
-        //     int CodeList (List<int> input) {
-        //         int res = 0;
-        //         foreach (int i in input) {
-        //             res = res << 1 | i;
-        //         }
-        //         return res;
-        //     }
-
-        //     return OptDist (CodeList (pattern), pattern.Count, length);
-        // }
 
         static void SolvePicture (List<int>[] rows, List<int>[] columns, TextWriter writer) {
             CombinationCache.Clear();
