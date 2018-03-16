@@ -3,10 +3,11 @@ A = [1, 2, 3, 1, 4]
 def similar_lists(A):
     bigrams = {}
 
-    for i in range(len(A) - 1):
-        if (A[i] not in bigrams):
-            bigrams[A[i]] = set()
-        bigrams[A[i]].add(A[i+1])
+    for i,v in zip(A[:-1],A[1:]):
+        if (i not in bigrams):
+            bigrams[i] = set([v])
+        else:
+            bigrams[i].add(v)
 
     if (A[len(A) - 1] not in bigrams):
         bigrams[A[len(A) - 1]] = set()

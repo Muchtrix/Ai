@@ -10,20 +10,17 @@ namespace Zadanie3
     {
         static void Main(string[] args)
         {
-            //PokerHelper.TestHands();
 
-            PokerHelper.SimulateGamesDeterministic(PokerHelper.LowDeck(), PokerHelper.HighDeck());
+            var highDeck = PokerHelper.HighDeck();
 
-            // var highDeck = PokerHelper.HighDeck();
-
-            // Console.WriteLine("Low vs High(100k hands)");
-            // PokerHelper.SimulateGames(PokerHelper.LowDeck(), highDeck, 100000);
-            // Console.WriteLine("\nHigh vs High (100k hands)");
-            // PokerHelper.SimulateGames(highDeck, highDeck, 100000);
-            // Console.WriteLine("\nSingle color vs High (100k hands)");
-            // PokerHelper.SimulateGames(PokerHelper.LowSingleColorDeck(), highDeck, 100000);
-            // Console.WriteLine("\nTwo colors vs High (100k hands)");
-            // PokerHelper.SimulateGames(PokerHelper.LowDoubleColorDeck(), highDeck, 100000);
+            Console.WriteLine("Low vs High(100k hands)");
+            PokerHelper.SimulateGames(PokerHelper.LowDeck(), highDeck, 100000);
+            Console.WriteLine("\nHigh vs High (100k hands)");
+            PokerHelper.SimulateGames(highDeck, highDeck, 100000);
+            Console.WriteLine("\nSingle color vs High (100k hands)");
+            PokerHelper.SimulateGames(PokerHelper.LowSingleColorDeck(), highDeck, 100000);
+            Console.WriteLine("\nTwo colors vs High (100k hands)");
+            PokerHelper.SimulateGames(PokerHelper.LowDoubleColorDeck(), highDeck, 100000);
         }
     }
 
