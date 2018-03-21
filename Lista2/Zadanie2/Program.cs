@@ -12,8 +12,7 @@ namespace Zadanie2
         static void Main(string[] args)
         {
             using (var sr = new StreamWriter("./zad_output.txt"))
-                //SokobanSolver.Solve(sr, args[0]);
-                SokobanSolver.Solve(sr, "--best");
+                SokobanSolver.Solve(sr, args[0]);
         }
     }
 
