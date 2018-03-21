@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -28,7 +29,9 @@ namespace Zadanie4
 
         public static void Solve(TextWriter tw) {
             var lines = File.ReadAllLines("./zad_input.txt");
-            TrooperState startingState = new TrooperState();
+            TrooperState startingState = new TrooperState() {
+                Possibilities = new HashSet<Point>(PointComparer.Instance)
+            };
 
             Walls = new char[lines[0].Length, lines.Length];
             for(int i = 0; i < lines.Length; ++i) {
@@ -74,17 +77,30 @@ namespace Zadanie4
                 MovePrefix.Add(Direction.D);
             }
 
-            // for(int i = 0; i < RANDOM_COUNT; ++i) {
+            // int dl = (lines[0].Length + lines.Length);
+
+            // for(int i = 0; i < dl; ++i){
+            //     startingState = MoveState(startingState, Direction.R);
+            //     startingState = MoveState(startingState, Direction.D);
+            //     MovePrefix.Add(Direction.R);
+            //     MovePrefix.Add(Direction.D);
+            // }
+
+            // while(startingState.Possibilities.Count > 2) {
+            //     mv++;
             //     startingState = RandomMove(startingState);
             // }
 
-            Console.Error.WriteLine($"After beginning moves: {oldCount}->{startingState.Possibilities.Count}");
+            //Console.Error.WriteLine($"After beginning {mv} moves: {oldCount}->{startingState.Possibilities.Count}");
 
             var moves = RunBFS(startingState);
-            tw.WriteLine(string.Concat(MovePrefix.Concat(moves)));
+            Console.WriteLine(string.Concat(MovePrefix.Concat(moves)));
+            tw.Write(string.Concat(MovePrefix));
+            tw.WriteLine(string.Concat(moves));
         }
 
-        static bool WinCondition(TrooperState st) => st.Possibilities.All(x => Walls[x.X, x.Y] == 'G');
+        //static bool WinCondition(TrooperState st) => st.Possibilities.All(x => Walls[x.X, x.Y] == 'G');
+        static bool WinCondition(TrooperState st) => st.Possibilities.SetEquals(Destinations);
 
         static TrooperState RandomMove(TrooperState state) {
             Direction dir = Directions[RNG.Next(Directions.Length)];
@@ -97,7 +113,7 @@ namespace Zadanie4
             return IsWall(n) ? p : n;
         }
 
-        static TrooperState MoveState(TrooperState state, Direction dir) => new TrooperState {Possibilities = state.Possibilities.Select(x => MoveOrStay(x, dir)).ToHashSet()};
+        static TrooperState MoveState(TrooperState state, Direction dir) => new TrooperState {Possibilities = state.Possibilities.Select(x => MoveOrStay(x, dir)).ToHashSet(PointComparer.Instance)};
 
         static List<Direction> RunBFS(TrooperState startingState) {
             Dictionary<TrooperState, (TrooperState Prev, Direction Dir)> previous = new Dictionary<TrooperState, (TrooperState, Direction)>();
@@ -106,7 +122,15 @@ namespace Zadanie4
             openStates.Enqueue(startingState);
             TrooperState finish = null;
 
+            //Stopwatch st = Stopwatch.StartNew();
+            //int iterations = 0;
+
             while(true) {
+                // ++iterations;
+                // if (st.ElapsedMilliseconds > 1000) {
+                //     Console.Error.WriteLine($"Time: {st.ElapsedMilliseconds}, iterations: {iterations}");
+                //     st.Restart();
+                // }
                 var current = openStates.Dequeue();
                 if(WinCondition(current)) {
                     finish = current;
@@ -129,6 +153,7 @@ namespace Zadanie4
                 backtrackTuple = previous[backtrackTuple.Prev];
             }
             result.Reverse();
+            //Console.Error.WriteLine($"Time: {st.Elapsed}");
             return result;
         }
 
@@ -153,7 +178,7 @@ namespace Zadanie4
     enum Direction {U, D, L, R}
 
     class TrooperState {
-        public HashSet<Point> Possibilities = new HashSet<Point>();
+        public HashSet<Point> Possibilities;
 
         public override bool Equals(object obj) {
             if (obj is TrooperState s) {
@@ -162,6 +187,20 @@ namespace Zadanie4
             return false;
         }
 
-        public override int GetHashCode() => Possibilities.Select(x => x.GetHashCode()).Aggregate((x,y) => x ^ y);
+        public override int GetHashCode() => Possibilities.Aggregate(983, (x,y) => x*457 + ((y.Y << 16)^ y.X));
+    }
+
+    class PointComparer : IEqualityComparer<Point> {
+        
+        public static PointComparer Instance = new PointComparer();
+
+        public bool Equals(Point x, Point y) {
+            return x.X == y.X && x.Y == y.Y;
+        }
+
+        public int GetHashCode(Point obj) {
+            // Perfect hash for practical bitmaps, their width/height is never >= 65536
+            return (obj.Y << 16) ^ obj.X;
+        }
     }
 }

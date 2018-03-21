@@ -21,7 +21,7 @@ namespace Zadanie1 {
     static class PicrossSolver {
         private static Random RNG = new Random ();
         private const double FailProb = 0.2;
-        private const int ResetCounter = 50000;
+        private const int ResetCounter = 20000;
 
         private static Dictionary<List<int>, List<int>> CombinationCache = new Dictionary<List<int>, List<int>>();
         static int OptDist (int current, List<int> sectors, int patternLength) {
@@ -65,6 +65,7 @@ namespace Zadanie1 {
 
         static void SolvePicture (List<int>[] rows, List<int>[] columns, TextWriter writer) {
             CombinationCache.Clear();
+            Stopwatch st = Stopwatch.StartNew();
             int[, ] picture = new int[columns.Length, rows.Length];
             int[] rowScores = new int[rows.Length];
             int[] columnScores = new int[columns.Length];
@@ -145,7 +146,7 @@ namespace Zadanie1 {
                     rowScores[bestY] = bestRow; 
                 }
             }
-            Console.Error.WriteLine($"No of iterations: {turnCounter}");
+            Console.Error.WriteLine($"No of iterations: {turnCounter}, time: {st.Elapsed}");
             //Console.Error.WriteLine($"Time: {st.Elapsed}");
             DrawPicture ();
         }
