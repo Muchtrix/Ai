@@ -1,2 +1,8 @@
+
 **/bin
 **/obj
+
+zad_input.txt
+zad_output.txt
+
+.benchmark_result

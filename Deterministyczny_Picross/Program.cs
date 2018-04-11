@@ -90,7 +90,7 @@ namespace Deterministyczny_Picross
                 }
             }
 
-            int turnCounter = 0;
+            // int turnCounter = 0;
             while (!full.All(x => x)) {
                 for (int idx = 0; idx < columns.Length; ++idx) {
                     int fullHash = 0, emptyHash = 0;
@@ -121,11 +121,11 @@ namespace Deterministyczny_Picross
                         emptyHash >>= 1;
                     }
                 }
-                ++turnCounter;
-                DrawPicture(Console.Out);
-                Console.WriteLine();
+                // ++turnCounter;
+                // DrawPicture(Console.Out);
+                // Console.WriteLine();
             }
-            Console.WriteLine($"No of iterations: {turnCounter}, time: {st.Elapsed}");
+            // Console.WriteLine($"No of iterations: {turnCounter}, time: {st.Elapsed}");
             DrawPicture(writer);
         }
 

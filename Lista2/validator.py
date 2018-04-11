@@ -1,19 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 '''
-Prosta sprawdzarka. Przykady użycia:
+Prosta sprawdzarka. Przykłady użycia:
 
-1. uruchomienie wszystkich testów dla danego zadania:
-python validator.py zad1 python rozwiazanie.py
+1. Uruchomienie wszystkich testów dla danego zadania:
+  `python validator.py zad1 python rozwiazanie.py`
 
-2. uruchomienie wybranych testów
-python validator.py --cases 1,3-5 zad1 a.out
+2. Uruchomienie wybranych testów
+  `python validator.py --cases 1,3-5 zad1 a.out`
 
-3. urochomienie na innych testach
-python validator.py --testset large_tests.yaml zad1 python rozwiazanie.py
+3. Urochomienie na innych testach
+  `python validator.py --testset large_tests.yaml zad1 python rozwiazanie.py`
 
-4. Wypisanie przykadowego wejścia/wyjścia:
-python validator.py --show_example zad1
+4. Wypisanie przykładowego wejścia/wyjścia:
+  `python validator.py --show_example zad1`
+
+5. Wypisanie informacji o rozwiązaniu:
+  `python validator.py --verbose zad1 python rozwiazanie.py`
+
+6. Wymuszenie użycia STDIN/STDOUT do komunikacji:
+  `python validator.py --stdio zad1 python rozwiazanie.py`
+
+7. Ustawienie mnożnika dla limitów czasowych:
+  `python validator.py --timeout-multiplier 2.5 zad1 python rozwiazanie.py`
+
+
 '''
 
 from __future__ import absolute_import
@@ -21,14 +32,18 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import argparse
-import numpy as np
 import os
 import signal
 import subprocess
 import sys
 import threading
-import yaml
 import time
+import math
+import timeit
+
+import numpy as np
+
+import yaml
 
 VERBOSE = False
 
@@ -889,7 +904,7 @@ zad5:
         #SSS#
         #SSS#
         #####
-      out: 9
+      out: 10
     - inp: |
         ############
         #   SSS#   #
@@ -906,7 +921,7 @@ zad5:
         # ##########
         #   SSS    #
         ############
-      out: 23
+      out: 24
     - inp: |
         ######################
         #        #   ##S     #
@@ -946,7 +961,7 @@ zad5:
         #                    #
         #                  S #
         ######################
-      out: 50
+      out: 51
     - inp: |
         ######################
         #        #   ##S     #
@@ -957,7 +972,8 @@ zad5:
         #####        SS      #
         #S                   #
         ######################
-        Length= 28
+      out: 28
+    - inp: |
         ######################
         #        # SS##    G #
         #        # SS##      #
@@ -1006,7 +1022,7 @@ zad5:
         #    #    S          #
         #S         ####      #
         ######################
-      out: 34
+      out: 35
     - inp: |
         ######################
         #        #         G #
@@ -1038,7 +1054,7 @@ zad5:
         #                    #
         #                  S #
         ######################
-      out: 55
+      out: 56
     - inp: |
         ######################
         #  SS              G #
@@ -1064,7 +1080,7 @@ zad5:
         #    #    S      SS  #
         #S         ####      #
         ######################
-      out: 39
+      out: 40
     - inp: |
         ############
         #SSSSSS#SSS#
@@ -1103,7 +1119,7 @@ zad5:
         #SS##SSSSSS#
         #SS##SSSSSS#
         ############
-      out: 18
+      out: 19
       timeout: 200
 '''
 )
@@ -1199,16 +1215,18 @@ class Sokoban(object):
 
     @staticmethod
     def moves_to_strings(empty_map, state, k_moves):
-        strings = [Sokoban.map_to_string(empty_map, state)]
+        if VERBOSE:
+            print(Sokoban.map_to_string(empty_map, state))
         for m in k_moves:
             possible_moves = Sokoban.keeper_moves(empty_map, state, m)
+            possible_moves = tuple(possible_moves)
             if not possible_moves:
-                strings.append("Keeper move %s is illegal!" % (m,))
-                return False, None, '\n'.join(strings)
+                fail("Keeper move %s is illegal!" % (m,))
             (_, state), = possible_moves
-            strings.append("Keeper move %s" % (m,))
-            strings.append(Sokoban.map_to_string(empty_map, state))
-        return True, state, strings
+            if VERBOSE:
+                print("Keeper move %s" % (m,))
+                print(Sokoban.map_to_string(empty_map, state))
+        return state
 
 
 def sokoban_validator(case, process_out, message=""):
@@ -1216,24 +1234,20 @@ def sokoban_validator(case, process_out, message=""):
     max_num_moves = int(whitespace_normalize(case['out']))
 
     empty_map, state = Sokoban.read_map(case['inp'].strip().split('\n'))
-    solved, state, strings = Sokoban.moves_to_strings(
+    state = Sokoban.moves_to_strings(
         empty_map, state, k_moves)
 
-    if VERBOSE:
-        print('\n'.join(strings))
-
+    g_locs = set(zip(*(empty_map == Sokoban.GOAL).nonzero()))
+    solved = g_locs == state[1]
     if solved:
-        g_locs = set(zip(*(empty_map == Sokoban.GOAL).nonzero()))
-        solved = g_locs == state[1]
-        if solved:
-            if len(k_moves) > max_num_moves:
-                fail("Level solved, but path is too long!")
-            else:
-                if VERBOSE:
-                    print(message + "Level solved!")
-                return {'num_steps': len(k_moves)}
+        if len(k_moves) > max_num_moves:
+            fail("Level solved, but path is too long!")
         else:
-            fail("All moves were legal, but puzzle not solved")
+            if VERBOSE:
+                print(message + "Level solved!")
+            return {'num_steps': len(k_moves)}
+    else:
+        fail("All moves were legal, but puzzle not solved")
 
 
 # Komandos
@@ -1315,12 +1329,9 @@ def komandos_validator(case, process_out, message=""):
     solved_fraction = len(states & maze.goals) / len(states)
 
     if solved_fraction == 1:
-        if len(k_moves) > max_num_moves:
-            fail(message + "Level solved, but path is too long!")
-        else:
-            if VERBOSE:
-                print("Level solved!")
-            return {'num_moves': len(k_moves)}
+        if VERBOSE:
+            print("Level solved!")
+        return {'num_moves': len(k_moves)}
     else:
         fail("%sLevel solved in %f%% only!" % (
              message, solved_fraction * 100.0))
@@ -1414,10 +1425,14 @@ else:
             os.killpg(os.getpgid(process.pid), signal.SIGTERM)
 
 
-def run_and_score_case(program, defaults, case_def, validator):
+def run_and_score_case(program, defaults, case_def, validator, timeout_multiplier):
     opts = dict(defaults)
     opts.update(case_def)
+    opts['timeout'] *= timeout_multiplier
     process_out, elapsed_time = run_case(program, **opts)
+    if VERBOSE:
+        print("Got output:")
+        print(process_out)
     measurements = validator(opts, process_out)
     measurements = measurements or {}
     measurements['time'] = elapsed_time
@@ -1511,8 +1526,14 @@ def get_argparser():
         '--show_example', default=False, action='store_true',
         help='Print a sample input/output pair.')
     parser.add_argument(
+        '--timeout-multiplier', '-tm',
+        help='Multiply timeout by provided amount, e.g. 2.13')
+    parser.add_argument(
         '--verbose', default=False, action='store_true',
         help='Print more information about solutions.')
+    parser.add_argument(
+        '--stdio', default=False, action='store_true',
+        help='Use stdin/stdout for communication.')
     parser.add_argument(
         'problem',
         help='Problem form this homework, one of: %s.' %
@@ -1550,7 +1571,42 @@ def get_cases(problem_def, cases):
                 yield case + 1, problem_cases[case]
 
 
+def simple_benchmark():
+    product = 1.0
+    for counter in range(1, 1000, 1):
+        for dex in list(range(1, 360, 1)):
+            angle = math.radians(dex)
+            product *= math.sin(angle)**2 + math.cos(angle)**2
+
+    sys.stdout.write('.')
+    sys.stdout.flush()
+    return product
+
+
+def start_benchmark():
+        print('Executing CPU benchmark. It may take some time ...')
+        print('0%', '.'*96, '100%')
+        sys.stdout.write('|')
+        sys.stdout.flush()
+
+        result = timeit.repeat('validator.simple_benchmark()', setup='import validator', number=10, repeat=10)
+        result = list(sorted(result))
+        result = sum(result[:3])/3.0
+        return (result - 1.0) / 1.5 + 1.0  # some tweaks
+
+
 if __name__ == '__main__':
+    benchmark_file = '.benchmark_result'
+    benchmark_result = 1.0
+    if not os.path.isfile(benchmark_file):
+        benchmark_result = start_benchmark()
+        print('|\nResult = ', benchmark_result)
+        with open(benchmark_file, 'w') as outFile:
+            outFile.write(str(benchmark_result))
+    else:
+        with open(benchmark_file) as inputFile:
+            benchmark_result = float(inputFile.readline())
+
     parser = get_argparser()
     args = parser.parse_args()
     VERBOSE = args.verbose
@@ -1578,8 +1634,12 @@ if __name__ == '__main__':
     for case_num, case_def in problem_cases:
         print('Running case %d... ' % (case_num,), end='')
         try:
+            timeout_multiplier = float(args.timeout_multiplier) if args.timeout_multiplier and float(args.timeout_multiplier) > 1 else 1
+            if args.stdio:
+                case_def['input_file'] = '<stdin>'
+                case_def['output_file'] = '<stdout>'
             case_meas = run_and_score_case(
-                program, problem_def['defaults'], case_def, problem_validator)
+                program, problem_def['defaults'], case_def, problem_validator, timeout_multiplier*benchmark_result)
             ok_cases.append((case_num, case_meas))
             print('OK!')
         except ValidatorException as e:
@@ -1603,6 +1663,8 @@ if __name__ == '__main__':
         misc_opts = ''
         if args.verbose:
             misc_opts = ' --verbose'
+        if args.timeout_multiplier:
+            misc_opts += ' --timeout-multiplier ' + args.timeout_multiplier
         if args.testset:
             misc_opts = '%s --testset %s' % (
                 misc_opts, shellquote(args.testset),)
