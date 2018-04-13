@@ -25,7 +25,7 @@ namespace Deterministyczny_Picross
         private const int ResetCounter = 20000;
         
         static private Dictionary<int, char> DrawingSymbols = new Dictionary<int, char>() {
-            {-1, '.'},
+            {2, '.'},
             {0, ' '},
             {1, '#'}
         };
@@ -38,14 +38,16 @@ namespace Deterministyczny_Picross
                 CombinationCache[sectors] = PossibleAllSectors(sectors, patternLength).ToList();
             }
             int newFilled = (1 << patternLength) - 1, newEmpty = (1 << patternLength) - 1;
-            foreach(int combination in CombinationCache[sectors]) {
+            var enumeration = CombinationCache[sectors];
+            bool isContradicting = true;
+            foreach(int combination in enumeration) {
                 if (((combination & sureFilled) == sureFilled) && ((~combination & sureEmpty) == sureEmpty)) {
+                    isContradicting = false;
                     newFilled &= combination;
                     newEmpty &= ~combination;
                 }
-                //if ((combination & sureFilled) == sureFilled) newFilled &= combination;
-                //if ((~combination & sureEmpty) == sureEmpty) newEmpty &= ~combination;
             }
+            if (isContradicting) throw new ContradictingStateException();
             return (newFilled, newEmpty);
         }
 
@@ -76,8 +78,7 @@ namespace Deterministyczny_Picross
         static void SolvePicture (List<int>[] rows, List<int>[] columns, TextWriter writer) {
             CombinationCache.Clear();
             Stopwatch st = Stopwatch.StartNew();
-            int[, ] picture = new int[columns.Length, rows.Length];
-            bool[] full = new bool[columns.Length + rows.Length];
+            byte[, ] picture = new byte[columns.Length, rows.Length];
 
             Console.WriteLine("---");
 
@@ -91,41 +92,64 @@ namespace Deterministyczny_Picross
             }
 
             // int turnCounter = 0;
-            while (!full.All(x => x)) {
-                for (int idx = 0; idx < columns.Length; ++idx) {
-                    int fullHash = 0, emptyHash = 0;
-                    for (int i = 0; i < rows.Length; ++i) {
-                        fullHash = (fullHash << 1) | ((picture[idx, i] == 1)? 1 : 0);
-                        emptyHash = (emptyHash << 1) | ((picture[idx, i] == -1)? 1 : 0);
+            bool isDetermined = true;
+            do {
+                try
+                {
+                    bool anythingChanged = false;
+                    for (int idx = 0; idx < columns.Length; ++idx) {
+                        int fullHash = 0, emptyHash = 0;
+                        for (int i = 0; i < rows.Length; ++i) {
+                            fullHash = (fullHash << 1) | ((picture[idx, i] == 1)? 1 : 0);
+                            emptyHash = (emptyHash << 1) | ((picture[idx, i] == 2)? 1 : 0);
+                        }
+                        var (newFullHash, newEmptyHash) = FillStep(fullHash, emptyHash, columns[idx], rows.Length);
+                        if ((fullHash ^ newFullHash) == 0 && (emptyHash ^ newEmptyHash) == 0) {
+                            continue;
+                        } else {
+                            anythingChanged = true;
+                        }
+                        for (int i = rows.Length - 1; i >= 0;  --i) {
+                            picture[idx, i] = (newFullHash % 2 == 1)? (byte)1 : (newEmptyHash % 2 == 1)? (byte)2 : (byte)0;
+                            newFullHash >>= 1;
+                            newEmptyHash >>= 1;
+                        }
                     }
-                    (fullHash, emptyHash) = FillStep(fullHash, emptyHash, columns[idx], rows.Length);
-                    full[idx] = (fullHash | emptyHash) == ((1 << rows.Length) - 1);
-                    for (int i = rows.Length - 1; i >= 0;  --i) {
-                        picture[idx, i] = (fullHash % 2 == 1)? 1 : (emptyHash % 2 == 1)? -1 : 0;
-                        fullHash >>= 1;
-                        emptyHash >>= 1;
+
+                    for (int idx = 0; idx < rows.Length; ++idx) {
+                        int fullHash = 0, emptyHash = 0;
+                        for (int i = 0; i < columns.Length; ++i) {
+                            fullHash = (fullHash << 1) | ((picture[i, idx] == 1)? 1 : 0);
+                            emptyHash = (emptyHash << 1) | ((picture[i, idx] == 2)? 1 : 0);
+                        }
+                        var (newFullHash, newEmptyHash) = FillStep(fullHash, emptyHash, rows[idx], columns.Length);
+                        if ((fullHash ^ newFullHash) == 0 && (emptyHash ^ newEmptyHash) == 0) {
+                            continue;
+                        } else {
+                            anythingChanged = true;
+                        }
+                        for (int i = columns.Length - 1; i >= 0;  --i) {
+                            picture[i, idx] = (newFullHash % 2 == 1)? (byte)1 : (newEmptyHash % 2 == 1)? (byte)2 : (byte)0;
+                            newFullHash >>= 1;
+                            newEmptyHash >>= 1;
+                        }
                     }
+                    Console.WriteLine(anythingChanged);
+                    if (! anythingChanged) {
+                        //TODO: guess new pixel and push state on stack
+                    }
+                }
+                catch (ContradictingStateException)
+                {
+                    Console.Error.WriteLine("CONTRADICTION!!");
+                    //TODO: pop a state from stack for backtracking
                 }
 
-                for (int idx = 0; idx < rows.Length; ++idx) {
-                    int fullHash = 0, emptyHash = 0;
-                    for (int i = 0; i < columns.Length; ++i) {
-                        fullHash = (fullHash << 1) | ((picture[i, idx] == 1)? 1 : 0);
-                        emptyHash = (emptyHash << 1) | ((picture[i, idx] == -1)? 1 : 0);
-                    }
-                    (fullHash, emptyHash) = FillStep(fullHash, emptyHash, rows[idx], columns.Length);
-                    full[columns.Length + idx] = (fullHash | emptyHash) == ((1 << columns.Length) - 1);
-                    for (int i = columns.Length - 1; i >= 0;  --i) {
-                        picture[i, idx] = (fullHash % 2 == 1)? 1 : (emptyHash % 2 == 1)? -1 : 0;
-                        fullHash >>= 1;
-                        emptyHash >>= 1;
-                    }
+                isDetermined = true;
+                foreach (var px in picture) {
+                    isDetermined = isDetermined && (px != 0);
                 }
-                // ++turnCounter;
-                // DrawPicture(Console.Out);
-                // Console.WriteLine();
-            }
-            // Console.WriteLine($"No of iterations: {turnCounter}, time: {st.Elapsed}");
+            } while (!isDetermined);
             DrawPicture(writer);
         }
 
@@ -135,12 +159,21 @@ namespace Deterministyczny_Picross
             List<int>[] columns = new List<int>[dimensions[1]];
             for (int i = 0; i < dimensions[0]; ++i) {
                 rows[i] = reader.ReadLine ().Split (' ').Select (x => int.Parse (x)).ToList ();
+                if (rows[i].Count == 1 && rows[i][0] == 0) rows[i].Clear();
             }
             for (int i = 0; i < dimensions[1]; ++i) {
                 columns[i] = reader.ReadLine ().Split (' ').Select (x => int.Parse (x)).ToList ();
+                if (columns[i].Count == 1 && columns[i][0] == 0) columns[i].Clear();
             }
 
             SolvePicture (rows, columns, writer);
         }
     }
+
+    class PicrossState {
+        public byte[,] Picture;
+        public (int X, int Y, byte Value) ChangedPixel;
+    }
+
+    class ContradictingStateException : Exception { }
 }

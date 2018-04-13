@@ -139,7 +139,7 @@ namespace Zadanie4
                     //     startingState = RandomMove(startingState);
                     // }
 
-                    Console.Error.WriteLine($"After beginning {PrePrefix.Count + MovePrefix.Count} moves: {startingState.Possibilities.Count}");
+                    Console.Error.WriteLine($"After beginning moves: {startingState.Possibilities.Count}");
 
                     var moves = RunBFS(startingState);
                     tw.Write(string.Concat(PrePrefix));
