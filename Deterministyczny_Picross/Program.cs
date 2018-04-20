@@ -503,7 +503,7 @@ namespace Deterministyczny_Picross
         }
 
         public IntegerSet(int length, int shift) {
-            //TODO: implement constructor alagous to (1111b << 5)
+            //TODO: implement constructor analagous to (1111b << 5)
         }
 
         public static IntegerSet operator ^(IntegerSet a, IntegerSet b) {
@@ -531,14 +531,7 @@ namespace Deterministyczny_Picross
         }
 
         public bool this[int i] {
-            get {
-                int currentIdx = 0;
-                while(i >= 32) {
-                    i -= 32;
-                    ++currentIdx;
-                }
-                return (Values[currentIdx] & ((1U << i) - 1)) != 0;
-            }
+            get => (Values[i/32] & ((1U << (i % 32)) - 1)) != 0;
         }
     }
 }
