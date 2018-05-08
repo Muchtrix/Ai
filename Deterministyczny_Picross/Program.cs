@@ -347,11 +347,11 @@ namespace Deterministyczny_Picross
                     PicrossState lastState = stateStack.Pop();
                     picture = lastState.Picture;
                     picture[lastState.ChangedPixel.X, lastState.ChangedPixel.Y] = 2;
-                    // Console.Clear();
-                    // DrawPicture(Console.Error);
+                     Console.Clear();
+                     DrawPicture(Console.Error);
                 }
             } while (!isDetermined);
-            // Console.Clear();
+             Console.Clear();
             DrawPicture(Console.Error);
             Console.CursorVisible = true;
             DrawPicture(writer);
