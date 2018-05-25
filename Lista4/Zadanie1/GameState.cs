@@ -1,23 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace Zadanie1 {
     enum Piece {
         Empty = 0,
         White = 1,
         Black = 2,
-    }
-
-    enum Direction {
-        Up = 0,
-        UpperRight = 1,
-        Right = 2,
-        LowerRight = 3,
-        Down = 4,
-        LowerLeft = 5,
-        Left = 6,
-        UpperLeft = 7
     }
 
     class GameState {
@@ -45,36 +35,53 @@ namespace Zadanie1 {
         public static bool IsValid(GameState state, Point position) {
             if (state.Board[position.X, position.Y] != Piece.Empty) return false;
             Piece opponentColor = 3 - state.CurrentPlayer;
-            foreach(int dir in Enum.GetValues(typeof (Direction))){
-                Point np = position + Directions[dir];
+            foreach(Size dir in Directions){
+                Point np = position + dir;
                 if (!IsInBoard(np) || state.Board[np.X, np.Y] != opponentColor) continue;
-                np += Directions[dir];
+                np += dir;
                 while (IsInBoard(np)) {
                     if (state.Board[np.X, np.Y] == Piece.Empty) {
                         break;
                     } else if (state.Board[np.X, np.Y] == state.CurrentPlayer) {
                         return true;
                     }
-                    np += Directions[dir];
+                    np += dir;
                 }
             }
             return false;
         }
 
-        internal void PrintBoard()
+        internal void PrintBoard(List<Point> hilighted = null)
         {
-            Dictionary<Piece, char> symbols = new Dictionary<Piece, char> {
-                {Piece.Empty, '.'},
-                {Piece.White, 'O'},
-                {Piece.Black, 'X'}
+            if (hilighted == null) hilighted = new List<Point>();
+            Dictionary<Piece, string> symbols = new Dictionary<Piece, string> {
+                {Piece.Empty, " ."},
+                {Piece.White, " O"},
+                {Piece.Black, " X"}
             };
 
+            Console.Error.WriteLine("  a b c d e f g h");
             for(int y = 0; y < 8; y++) {
+                Console.Error.Write(y+1);
                 for (int x = 0; x < 8; x++) {
-                    Console.Error.Write(symbols[Board[x,y]]);
+                    if (hilighted.Any(p => p.X == x && p.Y == y)) {
+                        Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        Console.Error.Write(" +"); 
+                    } else if (Board[x,y] == Piece.Empty) {
+                        Console.ForegroundColor = ((x + y) % 2 == 0) ? ConsoleColor.DarkGreen : ConsoleColor.DarkBlue;
+                        Console.Error.Write(" .");
+                    } else if (Board[x,y] == Piece.White) {
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.Error.Write(" \x25cf");
+                    } else if (Board[x,y] == Piece.Black) {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.Error.Write(" \x25cf");
+                    }
+                    Console.ForegroundColor = ConsoleColor.Gray;
                 }
-                Console.Error.WriteLine();
+                Console.Error.WriteLine(" " + (y + 1));
             }
+            Console.Error.WriteLine("  a b c d e f g h");
         }
 
         public List<Point> PossibleMoves() {
@@ -93,10 +100,11 @@ namespace Zadanie1 {
             res.Board = new Piece[8, 8];
             Array.Copy(Board, res.Board, Board.Length);
             res.CurrentPlayer = 3 - CurrentPlayer;
+            List<Point> changed = new List<Point>();
 
-            foreach(int dir in Enum.GetValues(typeof (Direction))){
-                Point np = position + Directions[dir];
-                List<Point> changed = new List<Point>();
+            foreach(Size dir in Directions){
+                Point np = position + dir;
+                changed.Clear();
                 while (IsInBoard(np)) {
                     if (Board[np.X, np.Y] == Piece.Empty) {
                         break;
@@ -107,7 +115,7 @@ namespace Zadanie1 {
                         break;
                     }
                     changed.Add(np);
-                    np += Directions[dir];
+                    np += dir;
                 }
             }
             res.Board[position.X, position.Y] = CurrentPlayer;
@@ -132,9 +140,6 @@ namespace Zadanie1 {
             res.Board[4, 3] = Piece.Black;
             res.Board[3, 4] = Piece.Black;
             res.Board[4, 4] = Piece.White;
-
-            res.WhiteScore = 2;
-            res.BlackScore = 2;
 
             return res;
         }

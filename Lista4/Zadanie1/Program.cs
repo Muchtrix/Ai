@@ -9,11 +9,16 @@ namespace Zadanie1
     {
         static void Main(string[] args)
         {
-            Stopwatch st = Stopwatch.StartNew();
             IPlayer randomBot = new RandomPlayer();
+            IPlayer minMaxBot = new MinMaxPlayer();
+            IPlayer humanBot = new HumanPlayer();
             GameMaster GM = new GameMaster();
-            Console.Error.WriteLine($"{(GM.PlayGame(randomBot, randomBot) == Piece.White ? "White" : "Black")} won!");
-            Console.Error.WriteLine($"Ellapsed: {st.Elapsed}");
+
+            Stopwatch st = Stopwatch.StartNew();
+            //GM.Map(1000);
+            //GM.PlayManyGames(minMaxBot, randomBot, 1000, 10);
+            Console.Error.WriteLine($"{(GM.PlayGame(randomBot, humanBot) == Piece.White ? "Białe" : "Czerwone")} wygrały!");
+            Console.Error.WriteLine($"Czas: {st.Elapsed}");
         }
     }
 }
