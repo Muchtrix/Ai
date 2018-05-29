@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace Zadanie1 {
+namespace Reversi {
     enum Piece {
         Empty = 0,
         White = 1,

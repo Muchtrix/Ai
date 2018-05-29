@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-
-namespace Zadanie1 {
-    class MinMaxPlayer : IPlayer
-    {
-        private static Random RNG = new Random();
+namespace Reversi.Heuristics {
+    class PositionalHeuristic : IHeuristic {
 
         public static double[,] PositionScore = new double[8,8]{
             {100, -20,  5, 15, 15,  5, -20, 100},
@@ -27,49 +20,17 @@ namespace Zadanie1 {
             // {92.099999999999,        -30.8000000000002,      43.7000000000004,       49.6000000000005,       7.80000000000001,       66.4000000000005,       -56.6000000000005,      88.8999999999992}
         };
 
-        public Piece Color { get; set; }
-
-        public Point Move(GameState state, List<Point> possibleMoves)
-        {
-            var evaluated = possibleMoves.OrderByDescending(p => AlphaBeta(state.AddPiece(p), 3, true, double.NegativeInfinity, double.PositiveInfinity));
-            return evaluated.First();
-        }
-
-        private double AlphaBeta(GameState state, int depth, bool min, double alpha, double beta) {
-            if (depth == 0) return HeuristicScore(state);
-            if (state.WhiteScore + state.BlackScore == 64) {
-                if (Color == Piece.White && state.WhiteScore > state.BlackScore ||
-                    Color == Piece.Black && state.BlackScore > state.WhiteScore) return double.PositiveInfinity;
-                else return double.NegativeInfinity;
-            }
-            var possibleMoves = state.PossibleMoves();
-            if (possibleMoves.Count == 0) return HeuristicScore(state);
-            if (min) {
-                foreach(var p in possibleMoves) {
-                    beta = Math.Min(beta, AlphaBeta(state.AddPiece(p), depth-1, !min, alpha, beta));
-                    if (alpha >= beta) break;
-                }
-                return beta;
-            } else {
-                foreach(var p in possibleMoves) {
-                    alpha = Math.Max(alpha, AlphaBeta(state.AddPiece(p), depth-1, !min, alpha, beta));
-                    if (alpha >= beta) break;
-                }
-                return alpha;
-            }
-        }
-
-        public double HeuristicScore(GameState state) {
+        public double EvaluateBoard(GameState board, Piece color) {
             double whiteScore = 0;
             double blackScore = 0;
             for (int x = 0; x < 8; ++x) {
                 for (int y = 0; y < 8; ++y) {
-                    if (state.Board[x,y] == Piece.Black) blackScore += PositionScore[x,y];
-                    else if (state.Board[x,y] == Piece.White) whiteScore += PositionScore[x,y];
+                    if (board.Board[x,y] == Piece.Black) blackScore += PositionScore[x,y];
+                    else if (board.Board[x,y] == Piece.White) whiteScore += PositionScore[x,y];
                 }
             }
 
-            return Color == Piece.White ? whiteScore - blackScore : blackScore - whiteScore;
+            return color == Piece.White ? whiteScore - blackScore : blackScore - whiteScore;
         }
     }
 }

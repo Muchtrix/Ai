@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace Zadanie1 {
+namespace Reversi.Players {
     class RandomPlayer : IPlayer
     {
         private Random RNG = new Random();

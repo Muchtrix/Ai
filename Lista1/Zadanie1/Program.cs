@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Zadanie1
+namespace Reversi
 {
     class Program
     {

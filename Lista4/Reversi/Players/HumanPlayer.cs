@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace Zadanie1 {
+namespace Reversi.Players {
     class HumanPlayer : IPlayer
     {
         public Piece Color { get; set; }

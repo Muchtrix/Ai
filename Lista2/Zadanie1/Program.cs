@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace Zadanie1 {
+namespace Reversi {
     class Program {
         static void Main (string[] args) {
             using (StreamReader sr = new StreamReader("./zad_input.txt"))

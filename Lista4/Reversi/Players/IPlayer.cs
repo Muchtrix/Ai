@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace Zadanie1 {
+namespace Reversi.Players {
     interface IPlayer {
         Point Move(GameState state, List<Point> possibleMoves);
 
