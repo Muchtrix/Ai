@@ -19,8 +19,8 @@ namespace Jungle
                     Console.WriteLine($"{(GM.Play(greedy, runner) == Player.Down ? "runner" : "greedy")}");
                 }
             }
-            Console.WriteLine($"Runner time: {runner.Timer.Elapsed}");
-            Console.WriteLine($"Greedy time: {greedy.Timer.Elapsed}");
+            //Console.WriteLine($"Runner time: {runner.Timer.Elapsed}");
+            //Console.WriteLine($"Greedy time: {greedy.Timer.Elapsed}");
         }
     }
 }

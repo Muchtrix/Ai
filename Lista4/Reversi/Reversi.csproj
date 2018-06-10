@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpLearning.Neural" Version="0.28.0" />
+    <PackageReference Include="NeuralNetwork.NET" Version="2.1.0" />
   </ItemGroup>
 
 </Project>

@@ -14,7 +14,7 @@ namespace Jungle.Players {
 
         public (Point, Direction) Move(GameState state, System.Collections.Generic.IList<(Point, Direction)> possibleMoves)
         {
-            Timer.Start();
+            //Timer.Start();
             int perPossibility = AvailableMoves / possibleMoves.Count;
             int bestIdx = 0;
             double bestPercentage = 0;
@@ -35,7 +35,7 @@ namespace Jungle.Players {
                     bestIdx = i;
                 }
             }
-            Timer.Stop();
+            //Timer.Stop();
             return possibleMoves[bestIdx];
         }
     }
