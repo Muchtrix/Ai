@@ -35,15 +35,29 @@ namespace Reversi {
 
                 CurrentState = CurrentState.AddPiece(mv);
             }
-#if DEBUG
-            Console.Clear();
-            CurrentState.PrintBoard();
-            Console.Error.WriteLine();
-            Console.Error.WriteLine($"Czerwone: {CurrentState.BlackScore} / Białe: {CurrentState.WhiteScore}");
-#endif
+// #if DEBUG
+//             Console.Clear();
+//             CurrentState.PrintBoard();
+//             Console.Error.WriteLine();
+//             Console.Error.WriteLine($"Czerwone: {CurrentState.BlackScore} / Białe: {CurrentState.WhiteScore}");
+// #endif
             if (CurrentState.WhiteScore == CurrentState.BlackScore) return Piece.Empty;
             else if (CurrentState.WhiteScore > CurrentState.BlackScore) return Piece.White;
             else return Piece.Black;
+        }
+
+        public void PlayEqualStarts(IPlayer player1, IPlayer player2, int startsPerPlayer) {
+            Console.WriteLine($"White: {player1.GetType()}, Black: {player2.GetType()}");
+            for(int i = 0; i < startsPerPlayer; ++i) {
+                Console.Error.Write($"Game {i + 1}...  ");
+                Console.WriteLine(PlayGame(player1, player2));
+            }
+
+            Console.WriteLine($"White: {player2.GetType()}, Black: {player1.GetType()}");
+            for(int i = 0; i < startsPerPlayer; ++i) {
+                Console.Error.Write($"Game {i + 1 + startsPerPlayer}...  ");
+                Console.WriteLine(PlayGame(player2, player1));
+            }
         }
 
         public int PlayManyGames(IPlayer player, IPlayer opponent, int gameCount, int logFrequency = 100) {
